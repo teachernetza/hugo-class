@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -7,309 +7,485 @@
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@500;700;800;900&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        heading: ['Outfit', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace'],
+                    },
+                    colors: {
+                        emerald: {
+                            400: '#34d399', 500: '#10b981', 600: '#059669', 700: '#047857',
+                        },
+                        dark: {
+                            bg: '#0f172a', surface: '#1e293b', border: '#334155'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
 
     <style>
+        /* Base Variables & Scrollbar */
         :root {
-            /* Premium Emerald Theme */
-            --bg-color: #f8fafc;
-            --surface-color: #ffffff;
-            --primary: #10b981; /* Emerald 500 */
-            --primary-dark: #059669; /* Emerald 600 */
-            --primary-light: #d1fae5; /* Emerald 100 */
-            --accent: #6366f1; /* Indigo 500 */
-            --text-main: #0f172a;
-            --text-muted: #64748b;
-            --border-light: #e2e8f0;
-            
-            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
-            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.05), 0 4px 6px -4px rgb(0 0 0 / 0.05);
-            --shadow-hover: 0 20px 25px -5px rgba(16, 185, 129, 0.15), 0 8px 10px -6px rgba(16, 185, 129, 0.1);
+            --sidebar-width: 260px;
+            --header-height: 70px;
         }
 
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            overflow-x: hidden;
             -webkit-tap-highlight-color: transparent;
+            overflow: hidden; /* App layout prevents body scroll */
+            background-color: #f8fafc;
         }
 
-        h1, h2, h3, .font-display {
-            font-family: 'Poppins', sans-serif;
+        .dark body { background-color: #0f172a; color: #f1f5f9; }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .dark ::-webkit-scrollbar-thumb { background: #475569; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        /* Layout Structure */
+        .app-container {
+            display: flex; height: 100vh; width: 100vw; overflow: hidden;
         }
 
-        /* Developer Grid Background */
-        .bg-grid {
-            position: fixed;
-            top: 0; left: 0; width: 100vw; height: 100vh;
-            z-index: -2;
-            background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
-            background-size: 30px 30px;
-            opacity: 0.4;
+        .sidebar {
+            width: var(--sidebar-width); height: 100%;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 40;
         }
 
-        /* Ambient Glow */
-        .bg-glow {
-            position: fixed;
-            top: 0; left: 0; width: 100vw; height: 100vh;
-            z-index: -1;
-            background: radial-gradient(circle at 15% 50%, rgba(16, 185, 129, 0.08), transparent 25%),
-                        radial-gradient(circle at 85% 30%, rgba(99, 102, 241, 0.08), transparent 25%);
-            pointer-events: none;
+        .main-content {
+            flex: 1; display: flex; flex-direction: column;
+            height: 100vh; position: relative; overflow: hidden;
         }
 
-        /* Navbar Glass Effect */
-        .glass-nav {
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border-bottom: 1px solid var(--border-light);
-            box-shadow: var(--shadow-sm);
+        .content-scroll {
+            flex: 1; overflow-y: auto; padding: 2rem;
+            scroll-behavior: smooth; position: relative;
         }
 
-        /* Hero Text Gradient */
-        .text-gradient {
-            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 50%, var(--accent) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+        /* Canvas Background */
+        #bg-canvas {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1; pointer-events: none;
         }
 
-        /* Dynamic Card System */
+        /* View Management (SPA) */
+        .view-section {
+            display: none; animation: fadeIn 0.4s ease-out forwards;
+        }
+        .view-section.active { display: block; }
+
+        /* Animations */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes slideOutRight { to { transform: translateX(100%); opacity: 0; } }
+        @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+
+        /* Premium Cards */
         .lab-card {
-            background: var(--surface-color);
-            border: 1px solid var(--border-light);
-            border-radius: 1.25rem;
-            padding: 1.5rem;
-            display: flex;
-            flex-direction: column;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            background: #ffffff; border: 1px solid #e2e8f0;
+            border-radius: 1rem; padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative; overflow: hidden;
+            display: flex; flex-direction: column;
             text-decoration: none;
-            position: relative;
-            overflow: hidden;
-            box-shadow: var(--shadow-md);
+        }
+        
+        .dark .lab-card {
+            background: #1e293b; border-color: #334155;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
         }
 
         .lab-card:hover {
-            transform: translateY(-6px) scale(1.02);
-            border-color: var(--primary-light);
-            box-shadow: var(--shadow-hover);
+            transform: translateY(-4px);
+            border-color: #10b981;
+            box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.15);
         }
 
-        .lab-card::after {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 4px;
-            background: linear-gradient(90deg, var(--primary), var(--accent));
-            opacity: 0;
-            transition: opacity 0.3s ease;
+        .dark .lab-card:hover {
+            border-color: #059669;
+            box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.2);
         }
-        
-        .lab-card:hover::after { opacity: 1; }
 
-        .card-icon {
-            width: 54px; height: 54px;
-            border-radius: 14px;
-            background: #f1f5f9;
-            color: var(--primary);
+        .lab-card::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 3px;
+            background: linear-gradient(90deg, #10b981, #3b82f6);
+            transform: scaleX(0); transform-origin: left; transition: transform 0.4s ease;
+        }
+        .lab-card:hover::before { transform: scaleX(1); }
+
+        .icon-box {
+            width: 48px; height: 48px; border-radius: 12px;
             display: flex; align-items: center; justify-content: center;
-            font-size: 1.5rem;
-            margin-bottom: 1.25rem;
-            transition: all 0.3s ease;
+            font-size: 1.25rem; transition: transform 0.3s ease;
         }
+        .lab-card:hover .icon-box { transform: scale(1.1) rotate(-5deg); }
 
-        .lab-card:hover .card-icon {
-            background: var(--primary);
-            color: white;
-            transform: rotate(-10deg) scale(1.1);
-        }
-
-        /* Iframe Container Loading State */
-        .iframe-container {
-            position: relative;
-            padding-bottom: 56.25%;
-            border-radius: 1rem;
-            overflow: hidden;
-            background: #e2e8f0;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.06);
-            border: 1px solid var(--border-light);
-        }
-
-        .iframe-loader {
-            position: absolute; top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
-            color: var(--text-muted); font-weight: 600; font-size: 0.9rem;
-        }
-
-        .iframe-container iframe {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; z-index: 10;
-        }
-
-        /* Toast Notification System */
-        .toast-container {
-            position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 100;
-            display: flex; flex-direction: column; gap: 0.5rem;
-        }
-
-        .toast {
-            background: white; border-radius: 0.75rem; padding: 1rem 1.25rem;
-            box-shadow: var(--shadow-lg); border-left: 4px solid var(--primary);
-            display: flex; align-items: center; gap: 0.75rem;
-            animation: slideInRight 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-            font-size: 0.9rem; font-weight: 600; color: var(--text-main);
-            max-width: 320px;
-        }
-
-        .toast.error { border-left-color: #ef4444; }
-        .toast.warning { border-left-color: #f59e0b; }
-        .toast.hiding { animation: slideOutRight 0.3s ease-in forwards; }
-
-        @keyframes slideInRight {
-            from { transform: translateX(120%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-        @keyframes slideOutRight {
-            to { transform: translateX(120%); opacity: 0; }
-        }
-        
-        @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fade-up { animation: fadeUp 0.6s ease-out both; }
-        .delay-100 { animation-delay: 100ms; }
-        .delay-200 { animation-delay: 200ms; }
-
-        /* Skeleton Shimmer */
+        /* Skeleton Loaders */
         .skeleton {
             background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
-            background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 8px;
+            background-size: 200% 100%; animation: shimmer 2s infinite; border-radius: 6px;
         }
-        @keyframes shimmer { 100% { background-position: -200% 0; } }
+        .dark .skeleton { background: linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%); background-size: 200% 100%; }
 
+        /* Toasts */
+        .toast-container {
+            position: fixed; bottom: 2rem; right: 2rem; z-index: 100;
+            display: flex; flex-direction: column; gap: 0.5rem;
+        }
+        .toast {
+            background: white; border-radius: 0.5rem; padding: 1rem;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+            border-left: 4px solid #10b981; display: flex; align-items: center; gap: 0.75rem;
+            animation: slideInRight 0.3s forwards; min-width: 250px;
+        }
+        .dark .toast { background: #1e293b; color: white; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); }
+        .toast.error { border-left-color: #ef4444; }
+        .toast.warning { border-left-color: #f59e0b; }
+        .toast.hiding { animation: slideOutRight 0.3s forwards; }
+
+        /* Mobile Sidebar Overlay */
+        .sidebar-overlay {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 30;
+            backdrop-filter: blur(4px);
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar { position: fixed; transform: translateX(-100%); }
+            .sidebar.mobile-open { transform: translateX(0); }
+            .sidebar-overlay.mobile-open { display: block; }
+            .content-scroll { padding: 1rem; }
+        }
+
+        /* Iframe Theater */
+        .iframe-container {
+            position: relative; padding-bottom: 56.25%; height: 0;
+            border-radius: 1rem; overflow: hidden; border: 1px solid #e2e8f0;
+            background: #f1f5f9; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .dark .iframe-container { border-color: #334155; background: #0f172a; }
+        .iframe-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
+        
+        .nav-item {
+            display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem;
+            border-radius: 0.75rem; color: #64748b; font-weight: 600; cursor: pointer;
+            transition: all 0.2s; margin-bottom: 0.25rem;
+        }
+        .dark .nav-item { color: #94a3b8; }
+        .nav-item:hover { background: #f1f5f9; color: #0f172a; }
+        .dark .nav-item:hover { background: #1e293b; color: #f1f5f9; }
+        .nav-item.active { background: #ecfdf5; color: #059669; }
+        .dark .nav-item.active { background: #064e3b; color: #34d399; }
     </style>
 </head>
-<body>
+<body class="text-slate-800 dark:text-slate-200">
 
-    <!-- Backgrounds -->
-    <div class="bg-grid"></div>
-    <div class="bg-glow"></div>
+    <!-- Interactive Particle Background -->
+    <canvas id="bg-canvas"></canvas>
 
-    <!-- Top Navigation -->
-    <nav class="glass-nav sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center text-white text-xl shadow-md">
-                    <i class="fas fa-graduation-cap"></i>
-                </div>
-                <div>
-                    <h2 class="font-display font-black text-lg leading-tight text-slate-800 tracking-tight">Learn.io</h2>
-                    <p class="text-[10px] font-bold text-emerald-600 uppercase tracking-widest leading-none">Student Portal</p>
-                </div>
-            </div>
-            
-            <div class="flex items-center gap-4">
-                <!-- Status Indicator -->
-                <div id="connection-status" class="hidden sm:flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-full border border-slate-200 transition-colors">
-                    <div class="w-2 h-2 rounded-full bg-slate-400" id="status-dot"></div>
-                    <span class="text-xs font-bold text-slate-600" id="status-text">Connecting...</span>
-                </div>
-                
-                <!-- Avatar -->
-                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-100 to-emerald-100 flex items-center justify-center text-indigo-700 font-black border-2 border-white shadow-sm ring-2 ring-slate-100">
+    <div class="app-container">
+        
+        <!-- Mobile Overlay -->
+        <div class="sidebar-overlay" id="sidebar-overlay" onclick="AppUI.toggleMobileSidebar()"></div>
+
+        <!-- Sidebar -->
+        <aside class="sidebar bg-white dark:bg-dark-surface border-r border-slate-200 dark:border-dark-border flex flex-col" id="sidebar">
+            <div class="h-[70px] flex items-center px-6 border-b border-slate-100 dark:border-slate-800">
+                <div class="w-8 h-8 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-lg flex items-center justify-center text-white font-bold shadow-md">
                     H
                 </div>
-            </div>
-        </div>
-    </nav>
-
-    <main class="max-w-6xl mx-auto px-4 py-8 md:py-12">
-        
-        <!-- Hero Section -->
-        <section class="text-center mb-12 animate-fade-up">
-            <div class="inline-flex items-center gap-2 px-4 py-1.5 bg-emerald-50 text-emerald-700 rounded-full font-bold text-sm mb-4 border border-emerald-200">
-                <i class="fas fa-rocket"></i> Active Session: Hugo
-            </div>
-            <h1 class="text-4xl md:text-6xl font-black mb-4 font-display tracking-tight">
-                Hugo's <span class="text-gradient">Learning Hub</span>
-            </h1>
-            <p class="text-lg text-slate-600 max-w-2xl mx-auto font-medium">
-                Welcome back! Review your class presentation and complete your interactive labs to level up your skills.
-            </p>
-        </section>
-
-        <!-- Presentation Viewer Section -->
-        <section class="bg-white rounded-2xl p-5 shadow-lg border border-slate-200 mb-12 animate-fade-up delay-100 relative z-10">
-            <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
-                <h2 class="text-xl md:text-2xl font-black font-display text-slate-800 flex items-center gap-3">
-                    <span class="w-10 h-10 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center text-lg"><i class="fas fa-chalkboard-teacher"></i></span>
-                    Class Presentation
-                </h2>
-                <a href="https://docs.google.com/presentation/d/1nOgnlcbYvmjqXXRBHrQ-wlY7vYBNNUvuwCRMJIhbJdE/edit?usp=sharing" target="_blank" rel="noopener noreferrer" class="text-sm font-bold text-slate-600 bg-slate-50 hover:bg-emerald-50 hover:text-emerald-700 border border-slate-200 hover:border-emerald-200 px-4 py-2 rounded-lg transition-all flex items-center gap-2">
-                    Open Native <i class="fas fa-external-link-alt"></i>
-                </a>
-            </div>
-            
-            <div class="iframe-container">
-                <div class="iframe-loader">
-                    <i class="fas fa-circle-notch fa-spin text-2xl text-emerald-500"></i>
-                    <span>Loading Slides...</span>
+                <div class="ml-3">
+                    <h1 class="font-heading font-black text-lg leading-none tracking-tight">Learn.io</h1>
+                    <span class="text-[10px] uppercase tracking-widest text-emerald-600 dark:text-emerald-400 font-bold">Pro Edition</span>
                 </div>
-                <iframe 
-                    src="https://docs.google.com/presentation/d/1nOgnlcbYvmjqXXRBHrQ-wlY7vYBNNUvuwCRMJIhbJdE/embed?start=false&loop=false&delayms=3000" 
-                    title="Class Slides"
-                    allowfullscreen="true" 
-                    mozallowfullscreen="true" 
-                    webkitallowfullscreen="true">
-                </iframe>
             </div>
-        </section>
 
-        <!-- Dynamic Content from GitHub -->
-        <div id="hub-blocks-container" class="space-y-12 animate-fade-up delay-200">
-            <!-- Sections injected via JS -->
+            <div class="flex-1 overflow-y-auto p-4 custom-scrollbar">
+                <div class="mb-6">
+                    <p class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2 px-2">Main Menu</p>
+                    <nav id="nav-main">
+                        <div class="nav-item active" data-target="view-dashboard" onclick="AppUI.switchView('view-dashboard')">
+                            <i class="fas fa-home w-5 text-center"></i> Dashboard
+                        </div>
+                        <div class="nav-item" data-target="view-presentation" onclick="AppUI.switchView('view-presentation')">
+                            <i class="fas fa-chalkboard-teacher w-5 text-center"></i> Class Slides
+                        </div>
+                    </nav>
+                </div>
+
+                <div class="mb-6">
+                    <p class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2 px-2">Course Blocks</p>
+                    <nav id="nav-blocks">
+                        <!-- Injected via JS -->
+                    </nav>
+                </div>
+                
+                <div>
+                    <p class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2 px-2">Tools</p>
+                    <nav id="nav-tools">
+                        <div class="nav-item" data-target="view-notes" onclick="AppUI.switchView('view-notes')">
+                            <i class="fas fa-book mr-2"></i> My Notes
+                        </div>
+                    </nav>
+                </div>
+            </div>
+
+            <div class="p-4 border-t border-slate-100 dark:border-slate-800 text-center">
+                <p class="text-xs font-medium text-slate-500 dark:text-slate-400">Teacher Netza &copy; 2024</p>
+            </div>
+        </aside>
+
+        <div class="main-content">
+            <!-- Top Header -->
+            <header class="h-[70px] bg-white/80 dark:bg-dark-surface/80 backdrop-blur-md border-b border-slate-200 dark:border-dark-border flex items-center justify-between px-4 md:px-8 z-30 shrink-0">
+                <div class="flex items-center gap-4">
+                    <button class="md:hidden text-slate-500 hover:text-emerald-600 text-xl" onclick="AppUI.toggleMobileSidebar()">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    
+                    <!-- Search Bar -->
+                    <div class="relative hidden sm:block">
+                        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                        <input type="text" id="global-search" placeholder="Search activities..." class="pl-10 pr-4 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-full text-sm focus:ring-2 focus:ring-emerald-500 outline-none w-64 text-slate-700 dark:text-slate-200 transition-all">
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-3 md:gap-5">
+                    <!-- Status Indicator -->
+                    <div id="api-status" class="hidden sm:flex items-center gap-2 bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-full border border-slate-200 dark:border-slate-700">
+                        <div class="w-2 h-2 rounded-full bg-slate-400 animate-pulse" id="status-dot"></div>
+                        <span class="text-xs font-bold text-slate-500 dark:text-slate-400" id="status-text">Connecting...</span>
+                    </div>
+
+                    <!-- Theme Toggle -->
+                    <button onclick="AppTheme.toggle()" class="w-10 h-10 rounded-full flex items-center justify-center bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-emerald-500 transition">
+                        <i class="fas fa-moon dark:hidden"></i>
+                        <i class="fas fa-sun hidden dark:block"></i>
+                    </button>
+
+                    <!-- User Profile -->
+                    <div class="flex items-center gap-3 pl-3 border-l border-slate-200 dark:border-slate-700">
+                        <div class="text-right hidden md:block">
+                            <p class="text-sm font-bold leading-none">Hugo</p>
+                            <p class="text-xs text-emerald-600 dark:text-emerald-400 font-semibold mt-1">Student</p>
+                        </div>
+                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Hugo&backgroundColor=d1fae5" alt="Avatar" class="w-10 h-10 rounded-full border-2 border-white dark:border-slate-700 shadow-sm bg-emerald-100">
+                    </div>
+                </div>
+            </header>
+
+            <!-- Scrollable View Area -->
+            <div class="content-scroll" id="content-area">
+                
+                <!-- DASHBOARD VIEW -->
+                <div id="view-dashboard" class="view-section active max-w-5xl mx-auto">
+                    <!-- Welcome Banner -->
+                    <div class="bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl p-6 md:p-10 text-white shadow-lg mb-8 relative overflow-hidden">
+                        <div class="absolute right-0 top-0 w-64 h-full opacity-20 pointer-events-none">
+                            <i class="fas fa-rocket text-9xl absolute -right-4 -top-4 transform rotate-12"></i>
+                        </div>
+                        <h2 class="font-heading font-black text-3xl md:text-4xl mb-2">Welcome back, Hugo! 👋</h2>
+                        <p class="text-emerald-50 font-medium text-lg max-w-xl">Your learning hub is ready. Pick up where you left off or explore new challenges in your blocks.</p>
+                        <div class="mt-6 flex gap-3">
+                            <button onclick="AppUI.switchView('view-presentation')" class="bg-white text-emerald-700 px-5 py-2.5 rounded-lg font-bold hover:bg-emerald-50 transition shadow-sm">
+                                <i class="fas fa-play mr-2"></i> Class Presentation
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="grid md:grid-cols-3 gap-6 mb-8">
+                        <!-- Quick Stats -->
+                        <div class="bg-white dark:bg-dark-surface p-6 rounded-2xl border border-slate-200 dark:border-dark-border shadow-sm flex items-center gap-4">
+                            <div class="w-14 h-14 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center text-2xl">
+                                <i class="fas fa-tasks"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-bold text-slate-500 dark:text-slate-400">Labs Completed</p>
+                                <h3 class="font-black text-2xl" id="stat-completed">0</h3>
+                            </div>
+                        </div>
+                        
+                        <!-- Study Timer Widget -->
+                        <div class="bg-white dark:bg-dark-surface p-6 rounded-2xl border border-slate-200 dark:border-dark-border shadow-sm md:col-span-2 flex justify-between items-center">
+                            <div>
+                                <h3 class="font-bold text-slate-800 dark:text-white flex items-center gap-2 mb-1"><i class="fas fa-stopwatch text-rose-500"></i> Pomodoro Focus</h3>
+                                <p class="text-sm text-slate-500 dark:text-slate-400">Boost productivity with 25-min sprints.</p>
+                            </div>
+                            <div class="flex items-center gap-4">
+                                <div class="font-mono text-3xl font-black text-slate-700 dark:text-slate-200" id="timer-display">25:00</div>
+                                <div class="flex gap-2">
+                                    <button onclick="Pomodoro.toggle()" id="timer-btn" class="w-10 h-10 bg-emerald-100 text-emerald-700 hover:bg-emerald-200 rounded-full flex items-center justify-center transition">
+                                        <i class="fas fa-play"></i>
+                                    </button>
+                                    <button onclick="Pomodoro.reset()" class="w-10 h-10 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-full flex items-center justify-center transition">
+                                        <i class="fas fa-redo"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Global Search Results Container -->
+                    <div id="search-results-container" class="hidden mb-8">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-heading font-black text-xl text-slate-800 dark:text-white">Search Results</h3>
+                            <button onclick="SearchSystem.clear()" class="text-sm font-bold text-rose-500">Clear Search</button>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5" id="search-results-grid"></div>
+                    </div>
+
+                    <!-- Syllabus Overview -->
+                    <h3 class="font-heading font-black text-xl text-slate-800 dark:text-white mb-4">Course Syllabus</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" id="dashboard-syllabus">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- PRESENTATION VIEW -->
+                <div id="view-presentation" class="view-section max-w-5xl mx-auto">
+                    <div class="flex items-center justify-between mb-6">
+                        <div>
+                            <h2 class="font-heading font-black text-2xl md:text-3xl text-slate-800 dark:text-white">Class Presentation</h2>
+                            <p class="text-slate-500 dark:text-slate-400">Review the official slides from the lesson.</p>
+                        </div>
+                        <a href="https://docs.google.com/presentation/d/1nOgnlcbYvmjqXXRBHrQ-wlY7vYBNNUvuwCRMJIhbJdE/edit?usp=sharing" target="_blank" class="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 font-bold px-4 py-2 rounded-lg border border-indigo-200 dark:border-indigo-800 hover:bg-indigo-100 transition flex items-center gap-2">
+                            Native View <i class="fas fa-external-link-alt"></i>
+                        </a>
+                    </div>
+                    
+                    <div class="iframe-container shadow-xl">
+                        <iframe 
+                            src="https://docs.google.com/presentation/d/1nOgnlcbYvmjqXXRBHrQ-wlY7vYBNNUvuwCRMJIhbJdE/embed?start=false&loop=false&delayms=3000" 
+                            allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true">
+                        </iframe>
+                    </div>
+                </div>
+
+                <!-- DYNAMIC BLOCKS CONTAINER -->
+                <div id="dynamic-views-container">
+                    <!-- Views injected here via JS -->
+                </div>
+
+                <!-- NOTES VIEW -->
+                <div id="view-notes" class="view-section max-w-4xl mx-auto">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-xl flex items-center justify-center text-2xl shadow-sm">
+                            <i class="fas fa-book"></i>
+                        </div>
+                        <div>
+                            <h2 class="font-heading font-black text-2xl md:text-3xl text-slate-800 dark:text-white">My Notepad</h2>
+                            <p class="text-slate-500 dark:text-slate-400">Write down vocabulary or questions. Autosaved to your browser.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white dark:bg-dark-surface border border-slate-200 dark:border-dark-border rounded-xl shadow-sm overflow-hidden flex flex-col h-[60vh]">
+                        <div class="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 p-3 flex justify-between items-center">
+                            <span class="text-sm font-bold text-slate-500"><i class="fas fa-save mr-1"></i> Autosaving...</span>
+                            <button onclick="NotesApp.clear()" class="text-sm font-bold text-rose-500 hover:underline">Clear Notes</button>
+                        </div>
+                        <textarea id="local-notes" class="flex-1 w-full p-6 bg-transparent border-none outline-none resize-none text-slate-700 dark:text-slate-300 leading-relaxed font-medium" placeholder="Start typing your notes here..."></textarea>
+                    </div>
+                </div>
+
+            </div>
         </div>
-
-    </main>
-
-    <footer class="text-center py-8 text-slate-500 font-medium text-sm">
-        <p>Built with <i class="fas fa-heart text-rose-500 mx-1"></i> by <strong>Teacher Netza</strong></p>
-    </footer>
+    </div>
 
     <!-- Toast Notifications Container -->
     <div class="toast-container" id="toast-container"></div>
 
     <script>
         /**
-         * HUB ARCHITECTURE & CONFIGURATION
-         * Ensures robust connections, caching, and error handling.
+         * HUGO'S LEARNING HUB - PRO SPA ARCHITECTURE
+         * A robust, cache-first, state-managed web application.
          */
-        const HubApp = {
-            config: {
+
+        // --- 1. CONFIGURATION ---
+        const AppConfig = {
+            github: {
                 owner: 'teachernetza',
                 repo: 'hugo-class',
-                cacheTTL: 5 * 60 * 1000, // 5 minutes cache to prevent API Rate Limits
+                cacheTTL: 10 * 60 * 1000, // 10 minutes cache to avoid rate limits
                 sections: [
-                    { folder: 'Bloque 1', title: 'Block 1: Fundamentals', icon: 'fa-cube', color: 'emerald' },
-                    { folder: 'Bloque 2', title: 'Block 2: Development', icon: 'fa-cubes', color: 'emerald' },
-                    { folder: 'Bloque 3', title: 'Block 3: Expansion', icon: 'fa-layer-group', color: 'emerald' },
-                    { folder: 'Bloque 4', title: 'Block 4: Mastery', icon: 'fa-gem', color: 'emerald' },
-                    { folder: 'Practice', title: 'Extra Practice Labs', icon: 'fa-rocket', color: 'indigo' }
+                    { id: 'bloque-1', folder: 'Bloque 1', title: 'Block 1: Fundamentals', icon: 'fa-cube', color: 'text-emerald-500', bg: 'bg-emerald-50 dark:bg-emerald-900/20' },
+                    { id: 'bloque-2', folder: 'Bloque 2', title: 'Block 2: Development', icon: 'fa-cubes', color: 'text-blue-500', bg: 'bg-blue-50 dark:bg-blue-900/20' },
+                    { id: 'bloque-3', folder: 'Bloque 3', title: 'Block 3: Expansion', icon: 'fa-layer-group', color: 'text-purple-500', bg: 'bg-purple-50 dark:bg-purple-900/20' },
+                    { id: 'bloque-4', folder: 'Bloque 4', title: 'Block 4: Mastery', icon: 'fa-gem', color: 'text-rose-500', bg: 'bg-rose-50 dark:bg-rose-900/20' },
+                    { id: 'practice', folder: 'Practice', title: 'Practice Labs', icon: 'fa-rocket', color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-900/20' }
                 ],
-                taskIcons: ['fa-bolt', 'fa-star', 'fa-code', 'fa-brain', 'fa-laptop-code', 'fa-puzzle-piece', 'fa-gamepad']
+                iconsPool: ['fa-bolt', 'fa-star', 'fa-code', 'fa-brain', 'fa-laptop-code', 'fa-puzzle-piece']
+            }
+        };
+
+        // --- 2. GLOBAL STATE ---
+        const AppState = {
+            data: {}, // Holds fetched HTML files per folder
+            completedLabs: JSON.parse(localStorage.getItem('hugo_completed_labs') || '[]'),
+            
+            markCompleted(path) {
+                if(!this.completedLabs.includes(path)) {
+                    this.completedLabs.push(path);
+                    localStorage.setItem('hugo_completed_labs', JSON.stringify(this.completedLabs));
+                    AppUI.updateDashboardStats();
+                }
             },
+            isCompleted(path) {
+                return this.completedLabs.includes(path);
+            }
+        };
 
-            container: document.getElementById('hub-blocks-container'),
-            statusDot: document.getElementById('status-dot'),
-            statusText: document.getElementById('status-text'),
-            statusContainer: document.getElementById('connection-status'),
+        // --- 3. UTILITIES & THEME ---
+        const Utils = {
+            formatTitle(filename) {
+                let clean = filename.replace(/\.html$/i, ''); 
+                clean = clean.replace(/[-_]/g, ' '); 
+                return clean.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+            },
+            getRandomIcon() {
+                const pool = AppConfig.github.iconsPool;
+                return pool[Math.floor(Math.random() * pool.length)];
+            }
+        };
 
-            // 1. UI Utilities
+        const AppTheme = {
+            init() {
+                // Check local storage or system preference
+                if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+            },
+            toggle() {
+                document.documentElement.classList.toggle('dark');
+                if (document.documentElement.classList.contains('dark')) {
+                    localStorage.theme = 'dark';
+                } else {
+                    localStorage.theme = 'light';
+                }
+                // Redraw canvas colors if needed
+                if(CanvasBg.ctx) CanvasBg.init(); 
+            }
+        };
+
+        const AppUI = {
+            toastQueue: [],
+            isToasting: false,
+            
             showToast(message, type = 'success') {
                 const container = document.getElementById('toast-container');
                 const toast = document.createElement('div');
@@ -321,206 +497,388 @@
                     'warning': '<i class="fas fa-info-circle text-amber-500 text-lg"></i>'
                 };
 
-                toast.innerHTML = `${icons[type]} <span>${message}</span>`;
+                toast.innerHTML = `${icons[type]} <span class="font-bold text-sm">${message}</span>`;
                 container.appendChild(toast);
 
                 setTimeout(() => {
                     toast.classList.add('hiding');
                     setTimeout(() => toast.remove(), 300);
-                }, 4000);
+                }, 3500);
             },
 
             updateStatus(state) {
+                const dot = document.getElementById('status-dot');
+                const txt = document.getElementById('status-text');
+                const container = document.getElementById('api-status');
+
+                container.className = 'hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full border transition-colors';
+                
                 if(state === 'online') {
-                    this.statusDot.className = 'w-2 h-2 rounded-full bg-emerald-500 animate-pulse';
-                    this.statusText.innerText = 'API Synced';
-                    this.statusContainer.className = 'hidden sm:flex items-center gap-2 bg-emerald-50 border-emerald-200 px-3 py-1.5 rounded-full border transition-colors';
+                    dot.className = 'w-2 h-2 rounded-full bg-emerald-500 animate-pulse';
+                    txt.innerText = 'Synced';
+                    container.classList.add('bg-emerald-50', 'border-emerald-200', 'dark:bg-emerald-900/20', 'dark:border-emerald-800');
                 } else if(state === 'cached') {
-                    this.statusDot.className = 'w-2 h-2 rounded-full bg-amber-500';
-                    this.statusText.innerText = 'Cached Mode';
-                    this.statusContainer.className = 'hidden sm:flex items-center gap-2 bg-amber-50 border-amber-200 px-3 py-1.5 rounded-full border transition-colors';
+                    dot.className = 'w-2 h-2 rounded-full bg-blue-500';
+                    txt.innerText = 'Cached';
+                    container.classList.add('bg-blue-50', 'border-blue-200', 'dark:bg-blue-900/20', 'dark:border-blue-800');
                 } else if(state === 'error') {
-                    this.statusDot.className = 'w-2 h-2 rounded-full bg-rose-500';
-                    this.statusText.innerText = 'Offline';
-                    this.statusContainer.className = 'hidden sm:flex items-center gap-2 bg-rose-50 border-rose-200 px-3 py-1.5 rounded-full border transition-colors';
+                    dot.className = 'w-2 h-2 rounded-full bg-rose-500';
+                    txt.innerText = 'Offline';
+                    container.classList.add('bg-rose-50', 'border-rose-200', 'dark:bg-rose-900/20', 'dark:border-rose-800');
                 }
             },
 
-            formatTitle(filename) {
-                let clean = filename.replace(/\.html$/i, ''); 
-                clean = clean.replace(/[-_]/g, ' '); 
-                return clean.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-            },
+            switchView(viewId) {
+                // Handle logic
+                if(viewId === 'view-dashboard') SearchSystem.clear(); // clear search on home
 
-            getRandomIcon() {
-                return this.config.taskIcons[Math.floor(Math.random() * this.config.taskIcons.length)];
-            },
-
-            // 2. Fetching with Intelligent Cache
-            async fetchFolderData(folderPath) {
-                const url = `https://api.github.com/repos/${this.config.owner}/${this.config.repo}/contents/${encodeURIComponent(folderPath)}`;
+                // Hide all
+                document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+                // Show target
+                const target = document.getElementById(viewId);
+                if(target) target.classList.add('active');
                 
-                // Check Cache first
-                const cachedData = sessionStorage.getItem(url);
-                if (cachedData) {
-                    const parsedCache = JSON.parse(cachedData);
-                    // If cache is fresh (less than TTL), use it immediately
-                    if (Date.now() - parsedCache.timestamp < this.config.cacheTTL) {
-                        return { data: parsedCache.data, source: 'cache' };
-                    }
-                }
+                // Update Sidebar Classes
+                document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+                const navLink = document.querySelector(`.nav-item[data-target="${viewId}"]`);
+                if(navLink) navLink.classList.add('active');
 
-                // If no valid cache, fetch from API
-                const response = await fetch(url);
-                
-                if (!response.ok) {
-                    // Check if we have stale cache as a fallback in case of rate limit
-                    if (cachedData && response.status === 403) {
-                        return { data: JSON.parse(cachedData).data, source: 'stale_cache' };
-                    }
-                    
-                    const errorMsg = response.status === 404 ? 'FOLDER_NOT_FOUND' : 
-                                     response.status === 403 ? 'RATE_LIMIT_EXCEEDED' : 'NETWORK_ERROR';
-                    throw new Error(errorMsg);
-                }
+                // Mobile close
+                document.getElementById('sidebar').classList.remove('mobile-open');
+                document.getElementById('sidebar-overlay').classList.remove('mobile-open');
 
-                const data = await response.json();
-                // Filter only HTML files
-                const htmlFiles = data.filter(file => file.type === 'file' && file.name.endsWith('.html'));
-                
-                // Save to Cache
-                sessionStorage.setItem(url, JSON.stringify({
-                    data: htmlFiles,
-                    timestamp: Date.now()
-                }));
-
-                return { data: htmlFiles, source: 'api' };
+                // Scroll to top
+                document.getElementById('content-area').scrollTo(0,0);
             },
 
-            // 3. UI Builders
-            buildSkeletonGrid(count) {
-                return Array(count).fill(0).map(() => `
-                    <div class="lab-card" style="pointer-events: none; border-color: transparent; box-shadow: var(--shadow-sm);">
-                        <div class="skeleton" style="width: 54px; height: 54px; border-radius: 14px; margin-bottom: 1.25rem;"></div>
-                        <div class="skeleton" style="width: 80%; height: 20px; margin-bottom: 0.75rem;"></div>
-                        <div class="skeleton" style="width: 100%; height: 14px; margin-bottom: 0.5rem;"></div>
-                        <div class="skeleton" style="width: 60%; height: 14px; margin-bottom: 1.5rem;"></div>
-                        <div class="skeleton mt-auto" style="width: 100%; height: 42px; border-radius: 10px;"></div>
-                    </div>
-                `).join('');
+            toggleMobileSidebar() {
+                document.getElementById('sidebar').classList.toggle('mobile-open');
+                document.getElementById('sidebar-overlay').classList.toggle('mobile-open');
             },
 
-            buildEmptyState(message, icon = 'fa-folder-open') {
+            updateDashboardStats() {
+                document.getElementById('stat-completed').innerText = AppState.completedLabs.length;
+            },
+
+            buildCardHTML(file, icon, title) {
+                const isCompleted = AppState.isCompleted(file.path);
+                const badge = isCompleted 
+                    ? `<span class="absolute top-4 right-4 bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-400 text-[10px] font-black px-2 py-1 rounded uppercase tracking-widest border border-emerald-200 dark:border-emerald-800"><i class="fas fa-check"></i> Done</span>` 
+                    : `<span class="absolute top-4 right-4 bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-400 text-[10px] font-black px-2 py-1 rounded uppercase tracking-widest border border-amber-200 dark:border-amber-800">New</span>`;
+
+                const safePath = encodeURI(file.path);
+
                 return `
-                    <div class="col-span-full py-12 px-4 bg-white border-2 border-dashed border-slate-200 rounded-2xl text-center flex flex-col items-center">
-                        <div class="w-16 h-16 bg-slate-50 text-slate-300 rounded-full flex items-center justify-center text-2xl mb-4">
+                    <a href="${safePath}" class="lab-card group" onclick="AppState.markCompleted('${file.path}')" target="_blank">
+                        ${badge}
+                        <div class="icon-box bg-slate-50 text-slate-500 dark:bg-slate-800 dark:text-slate-400 group-hover:bg-emerald-50 group-hover:text-emerald-600 dark:group-hover:bg-emerald-900/30 dark:group-hover:text-emerald-400 border border-slate-100 dark:border-slate-700">
                             <i class="fas ${icon}"></i>
                         </div>
-                        <h3 class="text-slate-800 font-bold text-lg mb-1">Nothing here yet</h3>
-                        <p class="text-slate-500 font-medium text-sm max-w-sm mx-auto">${message}</p>
-                    </div>
-                `;
-            },
-
-            createSectionWrapper(sectionData, id) {
-                const section = document.createElement('section');
-                section.id = `section-${id}`;
-                
-                const iconColorClass = sectionData.color === 'indigo' ? 'text-indigo-600 bg-indigo-50' : 'text-emerald-600 bg-emerald-50';
-
-                section.innerHTML = `
-                    <div class="flex items-center gap-3 mb-6">
-                        <div class="w-10 h-10 rounded-xl flex items-center justify-center text-lg ${iconColorClass}">
-                            <i class="fas ${sectionData.icon}"></i>
+                        <h3 class="card-title">${title}</h3>
+                        <p class="card-desc">Interactive practice environment. Launch to begin.</p>
+                        <div class="card-btn">
+                            <span>Launch Lab</span>
+                            <i class="fas fa-arrow-right"></i>
                         </div>
-                        <h2 class="text-2xl font-black font-display text-slate-800">${sectionData.title}</h2>
-                    </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="grid-${id}">
-                        ${this.buildSkeletonGrid(3)}
-                    </div>
+                    </a>
                 `;
-                return section;
+            }
+        };
+
+        const Pomodoro = {
+            time: 25 * 60, timerId: null, isRunning: false,
+            
+            updateDisplay() {
+                const m = Math.floor(this.time / 60).toString().padStart(2, '0');
+                const s = (this.time % 60).toString().padStart(2, '0');
+                document.getElementById('timer-display').innerText = `${m}:${s}`;
             },
-
-            // 4. Main Initialization Logic
-            async init() {
-                let usingCache = false;
-                let hasApiErrors = false;
-
-                // Load sections sequentially to maintain visual hierarchy
-                for (const section of this.config.sections) {
-                    const blockId = section.folder.replace(/\s+/g, '-').toLowerCase();
-                    const sectionNode = this.createSectionWrapper(section, blockId);
-                    this.container.appendChild(sectionNode);
-                    
-                    const gridContainer = document.getElementById(`grid-${blockId}`);
-
-                    try {
-                        const result = await this.fetchFolderData(section.folder);
-                        
-                        if (result.source === 'cache' || result.source === 'stale_cache') {
-                            usingCache = true;
-                        }
-
-                        if (result.data.length === 0) {
-                            gridContainer.innerHTML = this.buildEmptyState(`Teacher hasn't uploaded activities to "<b>${section.folder}</b>" yet.`);
-                            continue;
-                        }
-
-                        // Render Cards
-                        gridContainer.innerHTML = '';
-                        result.data.forEach((file) => {
-                            const title = this.formatTitle(file.name);
-                            const icon = this.getRandomIcon();
-                            
-                            // URI Encoding is crucial for files with spaces in names
-                            const safePath = encodeURI(file.path);
-                            
-                            gridContainer.innerHTML += `
-                                <a href="${safePath}" class="lab-card group">
-                                    <div class="card-icon"><i class="fas ${icon}"></i></div>
-                                    <h3 class="text-lg font-bold text-slate-800 mb-2 font-display leading-snug">${title}</h3>
-                                    <p class="text-sm text-slate-500 mb-6 font-medium line-clamp-2">Complete this interactive lab to practice and reinforce your knowledge.</p>
-                                    
-                                    <div class="mt-auto bg-slate-50 group-hover:bg-emerald-50 text-slate-600 group-hover:text-emerald-700 font-bold py-2.5 px-4 rounded-xl flex justify-between items-center transition-colors border border-slate-200 group-hover:border-emerald-200">
-                                        <span class="text-sm">Start Lab</span>
-                                        <i class="fas fa-arrow-right transform group-hover:translate-x-1 transition-transform"></i>
-                                    </div>
-                                </a>
-                            `;
-                        });
-
-                    } catch (error) {
-                        hasApiErrors = true;
-                        if (error.message === 'FOLDER_NOT_FOUND') {
-                            gridContainer.innerHTML = this.buildEmptyState(`Folder "<b>${section.folder}</b>" not found in repository.`, 'fa-folder-minus');
-                        } else if (error.message === 'RATE_LIMIT_EXCEEDED') {
-                            gridContainer.innerHTML = this.buildEmptyState(`GitHub API rate limit exceeded. Please wait a few minutes and try again.`, 'fa-hourglass-half');
-                            this.showToast('API Rate Limit Exceeded', 'error');
-                        } else {
-                            gridContainer.innerHTML = this.buildEmptyState(`Connection error. Check your internet connection.`, 'fa-wifi');
-                        }
-                    }
-                }
-
-                // Final Status Update
-                if (hasApiErrors) {
-                    this.updateStatus('error');
-                    this.showToast('Some sections failed to load.', 'error');
-                } else if (usingCache) {
-                    this.updateStatus('cached');
-                    this.showToast('Loaded fast from Cache! ⚡', 'warning');
+            toggle() {
+                const btn = document.getElementById('timer-btn');
+                if(this.isRunning) {
+                    clearInterval(this.timerId);
+                    btn.innerHTML = '<i class="fas fa-play"></i>';
+                    btn.classList.replace('bg-rose-100', 'bg-emerald-100');
+                    btn.classList.replace('text-rose-700', 'text-emerald-700');
                 } else {
-                    this.updateStatus('online');
-                    this.showToast('Synchronized with GitHub', 'success');
+                    this.timerId = setInterval(() => {
+                        if(this.time > 0) { this.time--; this.updateDisplay(); }
+                        else { this.toggle(); AppUI.showToast('Time is up! Take a break.', 'warning'); }
+                    }, 1000);
+                    btn.innerHTML = '<i class="fas fa-pause"></i>';
+                    btn.classList.replace('bg-emerald-100', 'bg-rose-100');
+                    btn.classList.replace('text-emerald-700', 'text-rose-700');
+                }
+                this.isRunning = !this.isRunning;
+            },
+            reset() {
+                if(this.isRunning) this.toggle();
+                this.time = 25 * 60;
+                this.updateDisplay();
+            }
+        };
+
+        const NotesApp = {
+            init() {
+                const el = document.getElementById('local-notes');
+                el.value = localStorage.getItem('hugo_notes') || '';
+                el.addEventListener('input', (e) => {
+                    localStorage.setItem('hugo_notes', e.target.value);
+                });
+            },
+            clear() {
+                if(confirm('Are you sure you want to clear your notes?')) {
+                    document.getElementById('local-notes').value = '';
+                    localStorage.removeItem('hugo_notes');
+                    AppUI.showToast('Notes cleared', 'success');
                 }
             }
         };
 
-        // Boot App
+        const SearchSystem = {
+            init() {
+                document.getElementById('global-search').addEventListener('input', (e) => {
+                    const query = e.target.value.toLowerCase();
+                    if(query.length < 2) {
+                        this.clear(); return;
+                    }
+                    this.performSearch(query);
+                });
+            },
+            performSearch(query) {
+                // Switch to dashboard view to show results
+                if(!document.getElementById('view-dashboard').classList.contains('active')){
+                    AppUI.switchView('view-dashboard');
+                }
+
+                const container = document.getElementById('search-results-container');
+                const grid = document.getElementById('search-results-grid');
+                let results = [];
+
+                // Search across all fetched data
+                Object.values(AppState.data).forEach(files => {
+                    files.forEach(file => {
+                        if(file.name.toLowerCase().includes(query)) {
+                            results.push(file);
+                        }
+                    });
+                });
+
+                if(results.length > 0) {
+                    grid.innerHTML = results.map(f => AppUI.buildCardHTML(f, Utils.getRandomIcon(), Utils.formatTitle(f.name))).join('');
+                } else {
+                    grid.innerHTML = `<div class="col-span-full p-6 text-center text-slate-500 font-bold border border-dashed rounded-xl border-slate-300">No activities found matching "${query}".</div>`;
+                }
+                container.classList.remove('hidden');
+            },
+            clear() {
+                document.getElementById('global-search').value = '';
+                document.getElementById('search-results-container').classList.add('hidden');
+            }
+        };
+
+        const GitHubAPI = {
+            async fetchFolder(section) {
+                const url = `https://api.github.com/repos/${AppConfig.github.owner}/${AppConfig.github.repo}/contents/${encodeURIComponent(section.folder)}`;
+                
+                // Caching Logic via LocalStorage
+                const cacheKey = `hugo_cache_${section.folder}`;
+                const cachedItem = localStorage.getItem(cacheKey);
+                
+                if (cachedItem) {
+                    const parsed = JSON.parse(cachedItem);
+                    if (Date.now() - parsed.timestamp < AppConfig.github.cacheTTL) {
+                        return { data: parsed.data, source: 'cache' };
+                    }
+                }
+
+                // Fetch Fresh
+                const response = await fetch(url);
+                if (!response.ok) {
+                    if (cachedItem && response.status === 403) return { data: JSON.parse(cachedItem).data, source: 'stale_cache' }; // Fallback
+                    throw new Error(response.status === 404 ? 'NOT_FOUND' : 'API_ERROR');
+                }
+
+                const data = await response.json();
+                const htmlFiles = data.filter(f => f.type === 'file' && f.name.endsWith('.html'));
+                
+                localStorage.setItem(cacheKey, JSON.stringify({ data: htmlFiles, timestamp: Date.now() }));
+                return { data: htmlFiles, source: 'network' };
+            }
+        };
+
+        const AppCore = {
+            async init() {
+                AppTheme.init();
+                NotesApp.init();
+                SearchSystem.init();
+                AppUI.updateDashboardStats();
+                CanvasBg.init();
+
+                const navBlocks = document.getElementById('nav-blocks');
+                const viewsContainer = document.getElementById('dynamic-views-container');
+                const dashboardSyllabus = document.getElementById('dashboard-syllabus');
+                
+                let usedCache = false;
+                let hadErrors = false;
+
+                // Build architecture dynamically
+                for (const section of AppConfig.github.sections) {
+                    const viewId = `view-${section.id}`;
+                    
+                    // 1. Add Sidebar Link
+                    navBlocks.innerHTML += `
+                        <div class="nav-item" data-target="${viewId}" onclick="AppUI.switchView('${viewId}')">
+                            <i class="fas ${section.icon} w-5 text-center ${section.color}"></i> ${section.folder}
+                        </div>
+                    `;
+
+                    // 2. Add Syllabus Card to Dashboard
+                    dashboardSyllabus.innerHTML += `
+                        <div class="p-4 border border-slate-200 dark:border-dark-border rounded-xl cursor-pointer hover:border-emerald-400 transition bg-white dark:bg-dark-surface flex items-center gap-4" onclick="AppUI.switchView('${viewId}')">
+                            <div class="w-12 h-12 rounded-lg ${section.bg} ${section.color} flex items-center justify-center text-xl">
+                                <i class="fas ${section.icon}"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-slate-800 dark:text-slate-200">${section.title}</h4>
+                                <p class="text-xs text-slate-500 font-bold uppercase tracking-wider mt-1">Explore Block <i class="fas fa-arrow-right ml-1"></i></p>
+                            </div>
+                        </div>
+                    `;
+
+                    // 3. Create View Container
+                    const viewEl = document.createElement('div');
+                    viewEl.id = viewId;
+                    viewEl.className = 'view-section max-w-6xl mx-auto';
+                    viewEl.innerHTML = `
+                        <div class="flex items-center gap-3 mb-6">
+                            <div class="w-12 h-12 rounded-xl ${section.bg} ${section.color} flex items-center justify-center text-2xl shadow-sm border border-slate-100 dark:border-slate-800">
+                                <i class="fas ${section.icon}"></i>
+                            </div>
+                            <div>
+                                <h2 class="font-heading font-black text-2xl md:text-3xl text-slate-800 dark:text-white">${section.title}</h2>
+                                <p class="text-slate-500 dark:text-slate-400">Complete these interactive labs.</p>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5" id="grid-${section.id}">
+                            <!-- Skeletons -->
+                            <div class="card" style="pointer-events: none; border: none; box-shadow: none;">
+                                <div class="skeleton w-12 h-12 rounded-xl mb-4"></div>
+                                <div class="skeleton w-3/4 h-6 mb-2"></div>
+                                <div class="skeleton w-full h-4 mb-1"></div>
+                                <div class="skeleton w-1/2 h-4 mb-6"></div>
+                                <div class="skeleton w-full h-10 rounded-lg"></div>
+                            </div>
+                            <div class="card" style="pointer-events: none; border: none; box-shadow: none;">
+                                <div class="skeleton w-12 h-12 rounded-xl mb-4"></div>
+                                <div class="skeleton w-3/4 h-6 mb-2"></div>
+                                <div class="skeleton w-full h-4 mb-1"></div>
+                                <div class="skeleton w-1/2 h-4 mb-6"></div>
+                                <div class="skeleton w-full h-10 rounded-lg"></div>
+                            </div>
+                        </div>
+                    `;
+                    viewsContainer.appendChild(viewEl);
+
+                    // 4. Fetch Data
+                    const grid = document.getElementById(`grid-${section.id}`);
+                    try {
+                        const result = await GitHubAPI.fetchFolder(section);
+                        if(result.source.includes('cache')) usedCache = true;
+                        
+                        AppState.data[section.id] = result.data; // Store globally for search
+
+                        if (result.data.length === 0) {
+                            grid.innerHTML = `<div class="col-span-full p-8 text-center bg-white dark:bg-dark-surface border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-2xl"><i class="fas fa-folder-open text-4xl text-slate-300 dark:text-slate-600 mb-2 block"></i><h3 class="font-bold text-slate-700 dark:text-slate-300">Empty Section</h3><p class="text-sm text-slate-500">Teacher hasn't uploaded files to "${section.folder}" yet.</p></div>`;
+                        } else {
+                            grid.innerHTML = result.data.map(f => AppUI.buildCardHTML(f, Utils.getRandomIcon(), Utils.formatTitle(f.name))).join('');
+                        }
+                    } catch(err) {
+                        hadErrors = true;
+                        grid.innerHTML = `<div class="col-span-full p-8 text-center bg-rose-50 dark:bg-rose-900/10 border-2 border-dashed border-rose-200 dark:border-rose-800 rounded-2xl"><i class="fas fa-exclamation-triangle text-4xl text-rose-400 mb-2 block"></i><h3 class="font-bold text-rose-700 dark:text-rose-400">Connection Error</h3><p class="text-sm text-rose-600 dark:text-rose-500">Could not load "${section.folder}".</p></div>`;
+                    }
+                }
+
+                // Final Status Eval
+                if (hadErrors) {
+                    AppUI.updateStatus('error');
+                    AppUI.showToast('Some sections failed to load.', 'error');
+                } else if (usedCache) {
+                    AppUI.updateStatus('cached');
+                    AppUI.showToast('Loaded instantly from Cache ⚡', 'success');
+                } else {
+                    AppUI.updateStatus('online');
+                    AppUI.showToast('Platform synced with GitHub', 'success');
+                }
+            }
+        };
+
+        const CanvasBg = {
+            canvas: null, ctx: null, particles: [],
+            init() {
+                this.canvas = document.getElementById('bg-canvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.resize();
+                window.addEventListener('resize', () => this.resize());
+                
+                // Create particles
+                this.particles = [];
+                const count = window.innerWidth < 768 ? 20 : 40;
+                for(let i=0; i<count; i++) {
+                    this.particles.push({
+                        x: Math.random() * this.canvas.width,
+                        y: Math.random() * this.canvas.height,
+                        vx: (Math.random() - 0.5) * 0.5,
+                        vy: (Math.random() - 0.5) * 0.5,
+                        size: Math.random() * 2 + 1
+                    });
+                }
+                this.animate();
+            },
+            resize() {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+            },
+            animate() {
+                // Determine color based on theme
+                const isDark = document.documentElement.classList.contains('dark');
+                const dotColor = isDark ? 'rgba(148, 163, 184, 0.15)' : 'rgba(148, 163, 184, 0.3)';
+                const lineColor = isDark ? 'rgba(148, 163, 184, 0.05)' : 'rgba(148, 163, 184, 0.1)';
+
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                this.particles.forEach((p, index) => {
+                    p.x += p.vx; p.y += p.vy;
+                    if(p.x < 0 || p.x > this.canvas.width) p.vx *= -1;
+                    if(p.y < 0 || p.y > this.canvas.height) p.vy *= -1;
+
+                    this.ctx.beginPath();
+                    this.ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                    this.ctx.fillStyle = dotColor;
+                    this.ctx.fill();
+
+                    // Draw connections
+                    for(let j = index + 1; j < this.particles.length; j++) {
+                        const p2 = this.particles[j];
+                        const dist = Math.hypot(p.x - p2.x, p.y - p2.y);
+                        if(dist < 150) {
+                            this.ctx.beginPath();
+                            this.ctx.moveTo(p.x, p.y);
+                            this.ctx.lineTo(p2.x, p2.y);
+                            this.ctx.strokeStyle = lineColor;
+                            this.ctx.stroke();
+                        }
+                    }
+                });
+                requestAnimationFrame(() => this.animate());
+            }
+        };
+
+        // --- BOOTSTRAP ---
         window.addEventListener('DOMContentLoaded', () => {
-            HubApp.init();
+            AppCore.init();
         });
+
     </script>
 </body>
 </html>
