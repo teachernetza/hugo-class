@@ -1,1 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Hugo's Learning Hub | Pro</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
 
+    <style>
+        :root {
+            /* Premium Emerald Theme */
+            --bg-color: #f8fafc;
+            --surface-color: #ffffff;
+            --primary: #10b981; /* Emerald 500 */
+            --primary-dark: #059669; /* Emerald 600 */
+            --primary-light: #d1fae5; /* Emerald 100 */
+            --accent: #6366f1; /* Indigo 500 */
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-light: #e2e8f0;
+            
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.05), 0 4px 6px -4px rgb(0 0 0 / 0.05);
+            --shadow-hover: 0 20px 25px -5px rgba(16, 185, 129, 0.15), 0 8px 10px -6px rgba(16, 185, 129, 0.1);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        h1, h2, h3, .font-display {
+            font-family: 'Poppins', sans-serif;
+        }
+
+        /* Developer Grid Background */
+        .bg-grid {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: -2;
+            background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+            background-size: 30px 30px;
+            opacity: 0.4;
+        }
+
+        /* Ambient Glow */
+        .bg-glow {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: -1;
+            background: radial-gradient(circle at 15% 50%, rgba(16, 185, 129, 0.08), transparent 25%),
+                        radial-gradient(circle at 85% 30%, rgba(99, 102, 241, 0.08), transparent 25%);
+            pointer-events: none;
+        }
+
+        /* Navbar Glass Effect */
+        .glass-nav {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border-light);
+            box-shadow: var(--shadow-sm);
+        }
+
+        /* Hero Text Gradient */
+        .text-gradient {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 50%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Dynamic Card System */
+        .lab-card {
+            background: var(--surface-color);
+            border: 1px solid var(--border-light);
+            border-radius: 1.25rem;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-decoration: none;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+        }
+
+        .lab-card:hover {
+            transform: translateY(-6px) scale(1.02);
+            border-color: var(--primary-light);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .lab-card::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .lab-card:hover::after { opacity: 1; }
+
+        .card-icon {
+            width: 54px; height: 54px;
+            border-radius: 14px;
+            background: #f1f5f9;
+            color: var(--primary);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1.25rem;
+            transition: all 0.3s ease;
+        }
+
+        .lab-card:hover .card-icon {
+            background: var(--primary);
+            color: white;
+            transform: rotate(-10deg) scale(1.1);
+        }
+
+        /* Iframe Container Loading State */
+        .iframe-container {
+            position: relative;
+            padding-bottom: 56.25%;
+            border-radius: 1rem;
+            overflow: hidden;
+            background: #e2e8f0;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.06);
+            border: 1px solid var(--border-light);
+        }
+
+        .iframe-loader {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
+            color: var(--text-muted); font-weight: 600; font-size: 0.9rem;
+        }
+
+        .iframe-container iframe {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; z-index: 10;
+        }
+
+        /* Toast Notification System */
+        .toast-container {
+            position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 100;
+            display: flex; flex-direction: column; gap: 0.5rem;
+        }
+
+        .toast {
+            background: white; border-radius: 0.75rem; padding: 1rem 1.25rem;
+            box-shadow: var(--shadow-lg); border-left: 4px solid var(--primary);
+            display: flex; align-items: center; gap: 0.75rem;
+            animation: slideInRight 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            font-size: 0.9rem; font-weight: 600; color: var(--text-main);
+            max-width: 320px;
+        }
+
+        .toast.error { border-left-color: #ef4444; }
+        .toast.warning { border-left-color: #f59e0b; }
+        .toast.hiding { animation: slideOutRight 0.3s ease-in forwards; }
+
+        @keyframes slideInRight {
+            from { transform: translateX(120%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes slideOutRight {
+            to { transform: translateX(120%); opacity: 0; }
+        }
+        
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-up { animation: fadeUp 0.6s ease-out both; }
+        .delay-100 { animation-delay: 100ms; }
+        .delay-200 { animation-delay: 200ms; }
+
+        /* Skeleton Shimmer */
+        .skeleton {
+            background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+            background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 8px;
+        }
+        @keyframes shimmer { 100% { background-position: -200% 0; } }
+
+    </style>
+</head>
+<body>
+
+    <!-- Backgrounds -->
+    <div class="bg-grid"></div>
+    <div class="bg-glow"></div>
+
+    <!-- Top Navigation -->
+    <nav class="glass-nav sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center text-white text-xl shadow-md">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <div>
+                    <h2 class="font-display font-black text-lg leading-tight text-slate-800 tracking-tight">Learn.io</h2>
+                    <p class="text-[10px] font-bold text-emerald-600 uppercase tracking-widest leading-none">Student Portal</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <!-- Status Indicator -->
+                <div id="connection-status" class="hidden sm:flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-full border border-slate-200 transition-colors">
+                    <div class="w-2 h-2 rounded-full bg-slate-400" id="status-dot"></div>
+                    <span class="text-xs font-bold text-slate-600" id="status-text">Connecting...</span>
+                </div>
+                
+                <!-- Avatar -->
+                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-100 to-emerald-100 flex items-center justify-center text-indigo-700 font-black border-2 border-white shadow-sm ring-2 ring-slate-100">
+                    H
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-6xl mx-auto px-4 py-8 md:py-12">
+        
+        <!-- Hero Section -->
+        <section class="text-center mb-12 animate-fade-up">
+            <div class="inline-flex items-center gap-2 px-4 py-1.5 bg-emerald-50 text-emerald-700 rounded-full font-bold text-sm mb-4 border border-emerald-200">
+                <i class="fas fa-rocket"></i> Active Session: Hugo
+            </div>
+            <h1 class="text-4xl md:text-6xl font-black mb-4 font-display tracking-tight">
+                Hugo's <span class="text-gradient">Learning Hub</span>
+            </h1>
+            <p class="text-lg text-slate-600 max-w-2xl mx-auto font-medium">
+                Welcome back! Review your class presentation and complete your interactive labs to level up your skills.
+            </p>
+        </section>
+
+        <!-- Presentation Viewer Section -->
+        <section class="bg-white rounded-2xl p-5 shadow-lg border border-slate-200 mb-12 animate-fade-up delay-100 relative z-10">
+            <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
+                <h2 class="text-xl md:text-2xl font-black font-display text-slate-800 flex items-center gap-3">
+                    <span class="w-10 h-10 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center text-lg"><i class="fas fa-chalkboard-teacher"></i></span>
+                    Class Presentation
+                </h2>
+                <a href="https://docs.google.com/presentation/d/1nOgnlcbYvmjqXXRBHrQ-wlY7vYBNNUvuwCRMJIhbJdE/edit?usp=sharing" target="_blank" rel="noopener noreferrer" class="text-sm font-bold text-slate-600 bg-slate-50 hover:bg-emerald-50 hover:text-emerald-700 border border-slate-200 hover:border-emerald-200 px-4 py-2 rounded-lg transition-all flex items-center gap-2">
+                    Open Native <i class="fas fa-external-link-alt"></i>
+                </a>
+            </div>
+            
+            <div class="iframe-container">
+                <div class="iframe-loader">
+                    <i class="fas fa-circle-notch fa-spin text-2xl text-emerald-500"></i>
+                    <span>Loading Slides...</span>
+                </div>
+                <iframe 
+                    src="https://docs.google.com/presentation/d/1nOgnlcbYvmjqXXRBHrQ-wlY7vYBNNUvuwCRMJIhbJdE/embed?start=false&loop=false&delayms=3000" 
+                    title="Class Slides"
+                    allowfullscreen="true" 
+                    mozallowfullscreen="true" 
+                    webkitallowfullscreen="true">
+                </iframe>
+            </div>
+        </section>
+
+        <!-- Dynamic Content from GitHub -->
+        <div id="hub-blocks-container" class="space-y-12 animate-fade-up delay-200">
+            <!-- Sections injected via JS -->
+        </div>
+
+    </main>
+
+    <footer class="text-center py-8 text-slate-500 font-medium text-sm">
+        <p>Built with <i class="fas fa-heart text-rose-500 mx-1"></i> by <strong>Teacher Netza</strong></p>
+    </footer>
+
+    <!-- Toast Notifications Container -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <script>
+        /**
+         * HUB ARCHITECTURE & CONFIGURATION
+         * Ensures robust connections, caching, and error handling.
+         */
+        const HubApp = {
+            config: {
+                owner: 'teachernetza',
+                repo: 'hugo-class',
+                cacheTTL: 5 * 60 * 1000, // 5 minutes cache to prevent API Rate Limits
+                sections: [
+                    { folder: 'Bloque 1', title: 'Block 1: Fundamentals', icon: 'fa-cube', color: 'emerald' },
+                    { folder: 'Bloque 2', title: 'Block 2: Development', icon: 'fa-cubes', color: 'emerald' },
+                    { folder: 'Bloque 3', title: 'Block 3: Expansion', icon: 'fa-layer-group', color: 'emerald' },
+                    { folder: 'Bloque 4', title: 'Block 4: Mastery', icon: 'fa-gem', color: 'emerald' },
+                    { folder: 'Practice', title: 'Extra Practice Labs', icon: 'fa-rocket', color: 'indigo' }
+                ],
+                taskIcons: ['fa-bolt', 'fa-star', 'fa-code', 'fa-brain', 'fa-laptop-code', 'fa-puzzle-piece', 'fa-gamepad']
+            },
+
+            container: document.getElementById('hub-blocks-container'),
+            statusDot: document.getElementById('status-dot'),
+            statusText: document.getElementById('status-text'),
+            statusContainer: document.getElementById('connection-status'),
+
+            // 1. UI Utilities
+            showToast(message, type = 'success') {
+                const container = document.getElementById('toast-container');
+                const toast = document.createElement('div');
+                toast.className = `toast ${type}`;
+                
+                const icons = {
+                    'success': '<i class="fas fa-check-circle text-emerald-500 text-lg"></i>',
+                    'error': '<i class="fas fa-exclamation-circle text-rose-500 text-lg"></i>',
+                    'warning': '<i class="fas fa-info-circle text-amber-500 text-lg"></i>'
+                };
+
+                toast.innerHTML = `${icons[type]} <span>${message}</span>`;
+                container.appendChild(toast);
+
+                setTimeout(() => {
+                    toast.classList.add('hiding');
+                    setTimeout(() => toast.remove(), 300);
+                }, 4000);
+            },
+
+            updateStatus(state) {
+                if(state === 'online') {
+                    this.statusDot.className = 'w-2 h-2 rounded-full bg-emerald-500 animate-pulse';
+                    this.statusText.innerText = 'API Synced';
+                    this.statusContainer.className = 'hidden sm:flex items-center gap-2 bg-emerald-50 border-emerald-200 px-3 py-1.5 rounded-full border transition-colors';
+                } else if(state === 'cached') {
+                    this.statusDot.className = 'w-2 h-2 rounded-full bg-amber-500';
+                    this.statusText.innerText = 'Cached Mode';
+                    this.statusContainer.className = 'hidden sm:flex items-center gap-2 bg-amber-50 border-amber-200 px-3 py-1.5 rounded-full border transition-colors';
+                } else if(state === 'error') {
+                    this.statusDot.className = 'w-2 h-2 rounded-full bg-rose-500';
+                    this.statusText.innerText = 'Offline';
+                    this.statusContainer.className = 'hidden sm:flex items-center gap-2 bg-rose-50 border-rose-200 px-3 py-1.5 rounded-full border transition-colors';
+                }
+            },
+
+            formatTitle(filename) {
+                let clean = filename.replace(/\.html$/i, ''); 
+                clean = clean.replace(/[-_]/g, ' '); 
+                return clean.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+            },
+
+            getRandomIcon() {
+                return this.config.taskIcons[Math.floor(Math.random() * this.config.taskIcons.length)];
+            },
+
+            // 2. Fetching with Intelligent Cache
+            async fetchFolderData(folderPath) {
+                const url = `https://api.github.com/repos/${this.config.owner}/${this.config.repo}/contents/${encodeURIComponent(folderPath)}`;
+                
+                // Check Cache first
+                const cachedData = sessionStorage.getItem(url);
+                if (cachedData) {
+                    const parsedCache = JSON.parse(cachedData);
+                    // If cache is fresh (less than TTL), use it immediately
+                    if (Date.now() - parsedCache.timestamp < this.config.cacheTTL) {
+                        return { data: parsedCache.data, source: 'cache' };
+                    }
+                }
+
+                // If no valid cache, fetch from API
+                const response = await fetch(url);
+                
+                if (!response.ok) {
+                    // Check if we have stale cache as a fallback in case of rate limit
+                    if (cachedData && response.status === 403) {
+                        return { data: JSON.parse(cachedData).data, source: 'stale_cache' };
+                    }
+                    
+                    const errorMsg = response.status === 404 ? 'FOLDER_NOT_FOUND' : 
+                                     response.status === 403 ? 'RATE_LIMIT_EXCEEDED' : 'NETWORK_ERROR';
+                    throw new Error(errorMsg);
+                }
+
+                const data = await response.json();
+                // Filter only HTML files
+                const htmlFiles = data.filter(file => file.type === 'file' && file.name.endsWith('.html'));
+                
+                // Save to Cache
+                sessionStorage.setItem(url, JSON.stringify({
+                    data: htmlFiles,
+                    timestamp: Date.now()
+                }));
+
+                return { data: htmlFiles, source: 'api' };
+            },
+
+            // 3. UI Builders
+            buildSkeletonGrid(count) {
+                return Array(count).fill(0).map(() => `
+                    <div class="lab-card" style="pointer-events: none; border-color: transparent; box-shadow: var(--shadow-sm);">
+                        <div class="skeleton" style="width: 54px; height: 54px; border-radius: 14px; margin-bottom: 1.25rem;"></div>
+                        <div class="skeleton" style="width: 80%; height: 20px; margin-bottom: 0.75rem;"></div>
+                        <div class="skeleton" style="width: 100%; height: 14px; margin-bottom: 0.5rem;"></div>
+                        <div class="skeleton" style="width: 60%; height: 14px; margin-bottom: 1.5rem;"></div>
+                        <div class="skeleton mt-auto" style="width: 100%; height: 42px; border-radius: 10px;"></div>
+                    </div>
+                `).join('');
+            },
+
+            buildEmptyState(message, icon = 'fa-folder-open') {
+                return `
+                    <div class="col-span-full py-12 px-4 bg-white border-2 border-dashed border-slate-200 rounded-2xl text-center flex flex-col items-center">
+                        <div class="w-16 h-16 bg-slate-50 text-slate-300 rounded-full flex items-center justify-center text-2xl mb-4">
+                            <i class="fas ${icon}"></i>
+                        </div>
+                        <h3 class="text-slate-800 font-bold text-lg mb-1">Nothing here yet</h3>
+                        <p class="text-slate-500 font-medium text-sm max-w-sm mx-auto">${message}</p>
+                    </div>
+                `;
+            },
+
+            createSectionWrapper(sectionData, id) {
+                const section = document.createElement('section');
+                section.id = `section-${id}`;
+                
+                const iconColorClass = sectionData.color === 'indigo' ? 'text-indigo-600 bg-indigo-50' : 'text-emerald-600 bg-emerald-50';
+
+                section.innerHTML = `
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-10 h-10 rounded-xl flex items-center justify-center text-lg ${iconColorClass}">
+                            <i class="fas ${sectionData.icon}"></i>
+                        </div>
+                        <h2 class="text-2xl font-black font-display text-slate-800">${sectionData.title}</h2>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="grid-${id}">
+                        ${this.buildSkeletonGrid(3)}
+                    </div>
+                `;
+                return section;
+            },
+
+            // 4. Main Initialization Logic
+            async init() {
+                let usingCache = false;
+                let hasApiErrors = false;
+
+                // Load sections sequentially to maintain visual hierarchy
+                for (const section of this.config.sections) {
+                    const blockId = section.folder.replace(/\s+/g, '-').toLowerCase();
+                    const sectionNode = this.createSectionWrapper(section, blockId);
+                    this.container.appendChild(sectionNode);
+                    
+                    const gridContainer = document.getElementById(`grid-${blockId}`);
+
+                    try {
+                        const result = await this.fetchFolderData(section.folder);
+                        
+                        if (result.source === 'cache' || result.source === 'stale_cache') {
+                            usingCache = true;
+                        }
+
+                        if (result.data.length === 0) {
+                            gridContainer.innerHTML = this.buildEmptyState(`Teacher hasn't uploaded activities to "<b>${section.folder}</b>" yet.`);
+                            continue;
+                        }
+
+                        // Render Cards
+                        gridContainer.innerHTML = '';
+                        result.data.forEach((file) => {
+                            const title = this.formatTitle(file.name);
+                            const icon = this.getRandomIcon();
+                            
+                            // URI Encoding is crucial for files with spaces in names
+                            const safePath = encodeURI(file.path);
+                            
+                            gridContainer.innerHTML += `
+                                <a href="${safePath}" class="lab-card group">
+                                    <div class="card-icon"><i class="fas ${icon}"></i></div>
+                                    <h3 class="text-lg font-bold text-slate-800 mb-2 font-display leading-snug">${title}</h3>
+                                    <p class="text-sm text-slate-500 mb-6 font-medium line-clamp-2">Complete this interactive lab to practice and reinforce your knowledge.</p>
+                                    
+                                    <div class="mt-auto bg-slate-50 group-hover:bg-emerald-50 text-slate-600 group-hover:text-emerald-700 font-bold py-2.5 px-4 rounded-xl flex justify-between items-center transition-colors border border-slate-200 group-hover:border-emerald-200">
+                                        <span class="text-sm">Start Lab</span>
+                                        <i class="fas fa-arrow-right transform group-hover:translate-x-1 transition-transform"></i>
+                                    </div>
+                                </a>
+                            `;
+                        });
+
+                    } catch (error) {
+                        hasApiErrors = true;
+                        if (error.message === 'FOLDER_NOT_FOUND') {
+                            gridContainer.innerHTML = this.buildEmptyState(`Folder "<b>${section.folder}</b>" not found in repository.`, 'fa-folder-minus');
+                        } else if (error.message === 'RATE_LIMIT_EXCEEDED') {
+                            gridContainer.innerHTML = this.buildEmptyState(`GitHub API rate limit exceeded. Please wait a few minutes and try again.`, 'fa-hourglass-half');
+                            this.showToast('API Rate Limit Exceeded', 'error');
+                        } else {
+                            gridContainer.innerHTML = this.buildEmptyState(`Connection error. Check your internet connection.`, 'fa-wifi');
+                        }
+                    }
+                }
+
+                // Final Status Update
+                if (hasApiErrors) {
+                    this.updateStatus('error');
+                    this.showToast('Some sections failed to load.', 'error');
+                } else if (usingCache) {
+                    this.updateStatus('cached');
+                    this.showToast('Loaded fast from Cache! ⚡', 'warning');
+                } else {
+                    this.updateStatus('online');
+                    this.showToast('Synchronized with GitHub', 'success');
+                }
+            }
+        };
+
+        // Boot App
+        window.addEventListener('DOMContentLoaded', () => {
+            HubApp.init();
+        });
+    </script>
+</body>
+</html>
